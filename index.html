@@ -3,231 +3,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Escena 3D Morada</title>
+<title>Para A La Que Mas Amo Y Amare</title>
 
 <style>
 body{
-    margin:0;
-    overflow:hidden;
-    background: radial-gradient(circle at center, #2a0050, #000);
-    font-family: Arial, sans-serif;
-}
-
-.topText{
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    background: rgba(80,0,120,0.5);
-    padding: 10px 25px;
-    border-radius: 20px;
-    z-index: 10;
-}
-
-.bottomBar{
-    position:absolute;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    background: rgba(60,0,100,0.6);
-    padding:15px;
-    border-radius:20px;
+margin:0;
+overflow:hidden;
+background:black;
 }
 </style>
 </head>
 
 <body>
 
-<div class="topText">
-Te Amo Muchote Mis Ojitos Brillantes Eres La Mejor💜
-</div>
-
-<div class="bottomBar">
-<audio controls>
-<source src="cancion.mp3" type="audio/mp3">
-</audio>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
 
-/* ESCENA */
+/* ===== ESCENA ===== */
 const scene = new THREE.Scene();
 
-/* CAMARA */
+/* ===== CAMARA ARRIBA ===== */
 const camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
-1000
+3000
 );
-camera.position.z = 30;
 
-/* RENDER */
-const renderer = new THREE.WebGLRenderer({ antialias:true });
+let zoom = 40;
+camera.position.set(0,zoom,0);
+camera.lookAt(0,0,0);
+
+/* ===== RENDER ===== */
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-/* LUZ */
-const light = new THREE.PointLight(0xaa66ff, 2, 200);
-light.position.set(20,20,20);
+/* ===== LUCES ===== */
+const light = new THREE.PointLight(0xaa66ff,4,500);
+light.position.set(50,50,50);
 scene.add(light);
 
-/* PLANETA */
-const geo = new THREE.SphereGeometry(6, 64, 64);
-const mat = new THREE.MeshStandardMaterial({
-color: 0x6a00ff,
-emissive: 0x220044
+/* ===== PLANETA ===== */
+const planetGeo = new THREE.SphereGeometry(7,64,64);
+const planetMat = new THREE.MeshStandardMaterial({
+color:0x5a00ff,
+emissive:0x6600ff,
+emissiveIntensity:1.5
 });
-const planet = new THREE.Mesh(geo, mat);
+const planet = new THREE.Mesh(planetGeo, planetMat);
 scene.add(planet);
 
-/* ESTRELLAS */
+/* ===== GLOW PLANETA ===== */
+const glowGeo = new THREE.SphereGeometry(9,64,64);
+const glowMat = new THREE.MeshBasicMaterial({
+color:0xaa55ff,
+transparent:true,
+opacity:0.2
+});
+const glow = new THREE.Mesh(glowGeo, glowMat);
+scene.add(glow);
+
+/* ===== ANILLO GRANDE CLARO ===== */
+const ringGeo = new THREE.RingGeometry(18,26,128);
+const ringMat = new THREE.MeshBasicMaterial({
+color:0xff99ff,
+side:THREE.DoubleSide,
+transparent:true,
+opacity:0.85
+});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI/2.2;
+scene.add(ring);
+
+/* ===== ESTRELLAS ===== */
 const starsGeo = new THREE.BufferGeometry();
-const starCount = 1500;
-const posArray = new Float32Array(starCount * 3);
+const starCount = 5000;
+const starPos = new Float32Array(starCount*3);
 
 for(let i=0;i<starCount*3;i++){
-posArray[i] = (Math.random() - 0.5) * 200;
+starPos[i]=(Math.random()-0.5)*1000;
 }
 
-starsGeo.setAttribute('position', new THREE.BufferAttribute(posArray,3));
+starsGeo.setAttribute("position", new THREE.BufferAttribute(starPos,3));
 
 const starsMat = new THREE.PointsMaterial({
-size: 0.7,
-color: 0xd9b3ff
+size:1.2,
+color:0xd9b3ff
 });
 
 const stars = new THREE.Points(starsGeo, starsMat);
 scene.add(stars);
 
-/* TEXTO 3D */
-function crearTexto(texto, x,y,z){
-const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
+/* ===== NEBULOSA ===== */
+const nebulaGeo = new THREE.SphereGeometry(300,64,64);
+const nebulaMat = new THREE.MeshBasicMaterial({
+color:0x220044,
+transparent:true,
+opacity:0.25,
+side:THREE.BackSide
+});
+const nebula = new THREE.Mesh(nebulaGeo, nebulaMat);
+scene.add(nebula);
 
-canvas.width = 512;
-canvas.height = 256;
+/* ===== FUNCION TEXTO ===== */
+function crearTexto(texto){
 
-ctx.fillStyle = "#ffffff";
-ctx.font = "40px Arial";
-ctx.fillText(texto, 20, 100);
+const canvas=document.createElement("canvas");
+const ctx=canvas.getContext("2d");
 
-const texture = new THREE.CanvasTexture(canvas);
-const material = new THREE.SpriteMaterial({ map:texture });
-const sprite = new THREE.Sprite(material);
+canvas.width=512;
+canvas.height=256;
 
-sprite.position.set(x,y,z);
-sprite.scale.set(10,5,1);
+ctx.shadowColor="#ff00ff";
+ctx.shadowBlur=25;
+ctx.fillStyle="#ffffff";
+ctx.font="bold 42px Arial";
+ctx.fillText(texto,30,120);
 
-scene.add(sprite);
+const texture=new THREE.CanvasTexture(canvas);
+const material=new THREE.SpriteMaterial({map:texture});
+const sprite=new THREE.Sprite(material);
+
+return sprite;
 }
 
-/* EDITA PALABRAS */
-crearTexto("Te Amo Muchísimo", -15, -5, 0);
-crearTexto("Mi Hermosa", 15, 5, -5);
-crearTexto("Mi Mundo", 0, -10, -10);
+/* ===== PALABRAS BASE ===== */
+const palabras = [
+"Mi Tesoro","Mi Paz","Mi Universo","Mi Amor",
+"Mi Luz","Mi Vida","Mi Destino","Mi Pechosa",
+"Mi Luzecita"
 
-/* 💥 EXPLOSION PARTICULAS */
-function explosion(x,y,z){
+];
 
-const count = 300;
-const geo = new THREE.BufferGeometry();
-const pos = new Float32Array(count * 3);
+/* ===== PALABRAS ANILLO ===== */
+let textosAnillo=[];
 
-for(let i=0;i<count;i++){
-pos[i*3] = x;
-pos[i*3+1] = y;
-pos[i*3+2] = z;
+for(let i=0;i<40;i++){
+
+let t = crearTexto(
+palabras[Math.floor(Math.random()*palabras.length)]
+);
+
+let angulo = (i/40)*Math.PI*2;
+
+t.userData = {angulo:angulo};
+
+scene.add(t);
+textosAnillo.push(t);
 }
 
-geo.setAttribute("position", new THREE.BufferAttribute(pos,3));
+/* ===== PALABRAS DISPERSAS ESPACIO ===== */
+let textosEspacio=[];
 
-const mat = new THREE.PointsMaterial({
-size:1.5,
-color:0xff99ff
+for(let i=0;i<60;i++){
+
+let t = crearTexto(
+palabras[Math.floor(Math.random()*palabras.length)]
+);
+
+let distanciaMin=60;
+let distanciaMax=220;
+
+let x=(Math.random()-0.5)*distanciaMax;
+let y=(Math.random()-0.5)*distanciaMax;
+let z=(Math.random()-0.5)*distanciaMax;
+
+if(Math.abs(x)<distanciaMin) x*=2;
+if(Math.abs(y)<distanciaMin) y*=2;
+if(Math.abs(z)<distanciaMin) z*=2;
+
+t.position.set(x,y,z);
+
+t.userData={
+offset:Math.random()*100,
+speed:0.002+Math.random()*0.003
+};
+
+scene.add(t);
+textosEspacio.push(t);
+}
+
+/* ===== ZOOM SCROLL ===== */
+window.addEventListener("wheel", e=>{
+zoom += e.deltaY*0.05;
+zoom = Math.max(15, Math.min(150, zoom));
+camera.position.set(0,zoom,0);
 });
 
-const points = new THREE.Points(geo, mat);
-scene.add(points);
+/* ===== ZOOM TOUCH ===== */
+let lastDist=0;
 
-/* Animar expansión */
-let speed = [];
+window.addEventListener("touchmove", e=>{
+if(e.touches.length==2){
 
-for(let i=0;i<count;i++){
-speed.push({
-x:(Math.random()-0.5)*0.5,
-y:(Math.random()-0.5)*0.5,
-z:(Math.random()-0.5)*0.5
-});
+let dx=e.touches[0].clientX-e.touches[1].clientX;
+let dy=e.touches[0].clientY-e.touches[1].clientY;
+
+let dist=Math.sqrt(dx*dx+dy*dy);
+
+if(lastDist){
+zoom -= (dist-lastDist)*0.1;
+zoom=Math.max(15,Math.min(150,zoom));
+camera.position.set(0,zoom,0);
 }
 
-let t = 0;
-
-function animateExplosion(){
-t++;
-
-const positions = points.geometry.attributes.position.array;
-
-for(let i=0;i<count;i++){
-positions[i*3]+=speed[i].x;
-positions[i*3+1]+=speed[i].y;
-positions[i*3+2]+=speed[i].z;
+lastDist=dist;
 }
-
-points.geometry.attributes.position.needsUpdate = true;
-
-if(t<80){
-requestAnimationFrame(animateExplosion);
-}else{
-scene.remove(points);
-}
-}
-
-animateExplosion();
-}
-
-/* CLICK / TOUCH */
-window.addEventListener("click", ()=> explosion(0,0,0));
-window.addEventListener("touchstart", ()=> explosion(0,0,0));
-
-/* CAMARA MOVIMIENTO */
-let mouseX = 0;
-let mouseY = 0;
-
-document.addEventListener("mousemove", e=>{
-mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
 
-document.addEventListener("touchmove", e=>{
-mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
-mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
-});
-
-/* LOOP */
+/* ===== LOOP ===== */
 function animate(){
 requestAnimationFrame(animate);
 
-planet.rotation.y += 0.003;
+/* Rotaciones */
+planet.rotation.y+=0.002;
+ring.rotation.z+=0.001;
+glow.rotation.y+=0.002;
 
-camera.position.x += (mouseX * 10 - camera.position.x) * 0.05;
-camera.position.y += (-mouseY * 10 - camera.position.y) * 0.05;
+/* Orbita textos anillo */
+textosAnillo.forEach(t=>{
+t.userData.angulo+=0.002;
+let r=22;
+t.position.x=Math.cos(t.userData.angulo)*r;
+t.position.z=Math.sin(t.userData.angulo)*r;
+t.position.y=0;
+t.lookAt(camera.position);
+});
 
-camera.lookAt(scene.position);
+/* Flotar textos espacio */
+textosEspacio.forEach(t=>{
+t.userData.offset+=t.userData.speed;
+t.position.y+=Math.sin(t.userData.offset)*0.02;
+t.position.x+=Math.cos(t.userData.offset)*0.01;
+t.lookAt(camera.position);
+});
 
-renderer.render(scene, camera);
+renderer.render(scene,camera);
 }
+
 animate();
 
-/* RESPONSIVE */
-window.addEventListener("resize", ()=>{
-camera.aspect = window.innerWidth/window.innerHeight;
+/* ===== RESPONSIVE ===== */
+window.addEventListener("resize",()=>{
+camera.aspect=window.innerWidth/window.innerHeight;
 camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(window.innerWidth,window.innerHeight);
 });
 
 </script>
